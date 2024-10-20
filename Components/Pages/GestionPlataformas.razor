@@ -1,0 +1,120 @@
+@page "/gestion-plataformas"
+@inject AppDbContext dbContext
+@using Microsoft.EntityFrameworkCore;
+
+<h3>Gestión de Plataformas</h3>
+
+<EditForm Model="nuevaPlataforma" OnValidSubmit="GuardarPlataforma" FormName="PlataformasForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label>Nombre de la plataforma:</label>
+        <InputText class="form-control" @bind-Value="nuevaPlataforma.Nombre" />
+        <ValidationMessage For="@(() => nuevaPlataforma.Nombre)" />
+    </div>
+    <div>
+        <label>Estado:</label>
+        <InputCheckbox @bind-Value="nuevaPlataforma.Estado" @onchange="OnEstadoChange" />
+        <span>@(nuevaPlataforma.Estado ? "Activa" : "Inactiva")</span> <!-- Mostrar estado -->
+    </div>
+    <button type="submit">@((nuevaPlataforma.Id > 0) ? "Actualizar Plataforma" : "Agregar Plataforma")</button>
+</EditForm>
+
+<h4>Plataformas Existentes</h4>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var plataforma in plataformas)
+        {
+            <tr>
+                <td><span>@plataforma.Nombre</span></td>
+                <td><span>(@(plataforma.Estado ? "Activa" : "Inactiva"))</span></td>
+                <td>
+                    <button  @onclick="() => EditarPlataforma(plataforma)">Editar</button>
+                    <button  @onclick="() => EliminarPlataforma(plataforma.Id)">Eliminar</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@code {
+    private Plataforma nuevaPlataforma = new Plataforma{Nombre = "Play Station 5" }; // Inicializa el objeto
+
+    private List<Plataforma> plataformas;
+
+    protected override async Task OnInitializedAsync()
+    {
+        plataformas = await dbContext.Plataformas.ToListAsync();
+    }
+
+    private async Task GuardarPlataforma()
+    {
+        // Verificar si el nombre está vacío solo al agregar, no al editar
+        if (nuevaPlataforma.Id == 0 && string.IsNullOrWhiteSpace(nuevaPlataforma.Nombre))
+        {
+            return; 
+        }
+
+        if (nuevaPlataforma.Id > 0) // Si hay un Id, significa que estamos actualizando
+        {
+            var plataformaExistente = await dbContext.Plataformas.FindAsync(nuevaPlataforma.Id);
+            if (plataformaExistente != null)
+            {
+                plataformaExistente.Nombre = nuevaPlataforma.Nombre;
+                plataformaExistente.Estado = nuevaPlataforma.Estado;
+            }
+        }
+        else
+        {
+            // Agregar la nueva plataforma a la base de datos
+            dbContext.Plataformas.Add(new Plataforma
+            {
+                Nombre = nuevaPlataforma.Nombre,
+                Estado = nuevaPlataforma.Estado
+            });
+        }
+
+        await dbContext.SaveChangesAsync();
+        
+        // Limpiar el formulario después de agregar/actualizar
+        nuevaPlataforma = new Plataforma();
+        
+        // Actualizar la lista de plataformas
+        plataformas = await dbContext.Plataformas.ToListAsync();
+    }
+
+    private void OnEstadoChange(ChangeEventArgs e)
+    {
+        nuevaPlataforma.Estado = (bool)e.Value; // Actualiza el estado según el checkbox
+    }
+
+    private async Task EditarPlataforma(Plataforma plataforma)
+    {
+        nuevaPlataforma = new Plataforma
+        {
+            Id = plataforma.Id,
+            Nombre = plataforma.Nombre,
+            Estado = plataforma.Estado
+        }; // Cargar los datos de la plataforma seleccionada en el formulario
+    }
+
+    private async Task EliminarPlataforma(int id)
+    {
+        var plataforma = await dbContext.Plataformas.FindAsync(id);
+        if (plataforma != null)
+        {
+            dbContext.Plataformas.Remove(plataforma);
+            await dbContext.SaveChangesAsync();
+            plataformas = await dbContext.Plataformas.ToListAsync(); // Actualizar la lista después de eliminar
+        }
+    }
+}

@@ -1,0 +1,71 @@
+@page "/registro-personajes"
+@inject AppDbContext dbContext
+@using Microsoft.EntityFrameworkCore; 
+@inject AppDbContext dbContext
+
+
+<h3>Registro de Personajes</h3>
+
+<EditForm Model="nuevoPersonaje" OnValidSubmit="GuardarPersonaje" FormName="PersonajesForm" class="container mt-5 bg-dark text-white p-4 rounded">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <h3 class="text-center">Registrar Personaje</h3>
+
+    <div class="mb-3">
+        <label class="form-label">Nombre:</label>
+        <InputText class="form-control" @bind-Value="nuevoPersonaje.Nombre" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Alias:</label>
+        <InputText class="form-control" @bind-Value="nuevoPersonaje.Alias" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Rol en el juego:</label>
+        <InputText class="form-control" @bind-Value="nuevoPersonaje.Rol" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Habilidad especial:</label>
+        <InputText class="form-control" @bind-Value="nuevoPersonaje.HabilidadEspecial" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Arma favorita:</label>
+        <InputText class="form-control" @bind-Value="nuevoPersonaje.ArmaFavorita" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Nivel de poder (1-100):</label>
+        <InputNumber class="form-control" @bind-Value="nuevoPersonaje.NivelDePoder" min="1" max="100" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Imagen del personaje (URL):</label>
+        <InputText class="form-control" @bind-Value="nuevoPersonaje.ImagenPersonaje" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Videojuego asociado:</label>
+        <InputSelect class="form-select" @bind-Value="nuevoPersonaje.VideojuegoId">
+            @foreach (var videojuego in videojuegos)
+            {
+                <option value="@videojuego.Id">@videojuego.Nombre</option>
+            }
+        </InputSelect>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Registrar Personaje</button>
+</EditForm>
+
+
+@code {
+    private Personaje nuevoPersonaje = new Personaje();
+    private List<Videojuego> videojuegos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        videojuegos = await dbContext.Videojuegos.ToListAsync();
+    }
+
+    private async Task GuardarPersonaje()
+    {
+        dbContext.Personajes.Add(nuevoPersonaje);
+        await dbContext.SaveChangesAsync();
+        nuevoPersonaje = new Personaje(); // Limpiar el formulario
+    }
+}

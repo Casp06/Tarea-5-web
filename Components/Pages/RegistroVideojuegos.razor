@@ -1,0 +1,96 @@
+@page "/registro-videojuegos"
+@inject AppDbContext dbContext
+@using Microsoft.EntityFrameworkCore; 
+
+<h3>Registro de Videojuegos</h3>
+
+<EditForm Model="nuevoVideojuego" OnValidSubmit="GuardarVideojuego" FormName="VideojuegosForm" class="bg-dark p-4 rounded shadow">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <h4 class="text-light">Registrar Videojuego</h4>
+
+    <div class="form-group">
+        <label class="text-light">Nombre:</label>
+        <InputText class="form-control" @bind-Value="nuevoVideojuego.Nombre" />
+    </div>
+    
+    <div class="form-group">
+        <label class="text-light">Desarrollador:</label>
+        <InputText class="form-control" @bind-Value="nuevoVideojuego.Desarrollador" />
+    </div>
+
+    <div class="form-group">
+        <label class="text-light">Plataforma:</label>
+        <InputSelect class="form-control" @bind-Value="nuevoVideojuego.PlataformaId">
+            @foreach (var plataforma in plataformas)
+            {
+                <option value="@plataforma.Id">@plataforma.Nombre</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div class="form-group">
+        <label class="text-light">Género:</label>
+        <InputText class="form-control" @bind-Value="nuevoVideojuego.Genero" />
+    </div>
+
+    <div class="form-group">
+        <label class="text-light">Fecha de lanzamiento:</label>
+        <InputDate class="form-control" @bind-Value="nuevoVideojuego.FechaLanzamiento" />
+    </div>
+
+    <div class="form-group">
+        <label class="text-light">Imagen de portada (URL):</label>
+        <InputText class="form-control" @bind-Value="nuevoVideojuego.ImagenPortada" />
+    </div>
+
+    <div class="form-group">
+        <label class="text-light">Descripción:</label>
+        <InputTextArea class="form-control" @bind-Value="nuevoVideojuego.Descripcion" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Registrar Videojuego</button>
+</EditForm>
+
+@if (videojuegoRegistrado)
+{
+    <div class="alert alert-success mt-3" role="alert">
+        Videojuego registrado exitosamente.
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(nuevoVideojuego.ImagenPortada))
+{
+    <img src="@nuevoVideojuego.ImagenPortada" alt="Portada del Videojuego" class="img-fluid mt-3" />
+}
+
+@code {
+    private Videojuego nuevoVideojuego = new Videojuego();
+    private List<Plataforma> plataformas;
+    private bool videojuegoRegistrado = false; // Agregar un flag para la confirmación
+
+    protected override async Task OnInitializedAsync()
+    {
+        plataformas = await dbContext.Plataformas.ToListAsync();
+    }
+
+    private async Task GuardarVideojuego()
+    {
+        try
+        {
+            dbContext.Videojuegos.Add(nuevoVideojuego);
+            await dbContext.SaveChangesAsync();
+            videojuegoRegistrado = true; // Cambiar el flag para mostrar el mensaje
+            nuevoVideojuego = new Videojuego(); // Limpiar el formulario
+        }
+        catch (DbUpdateException ex)
+        {
+            Console.WriteLine($"Error al guardar el videojuego: {ex.Message}");
+            // Aquí puedes manejar el error mostrando un mensaje en la UI
+        }
+    }
+
+
+
+}

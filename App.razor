@@ -1,0 +1,13 @@
+@using clase5.Components.Layout
+
+<Router AppAssembly="@typeof(Program).Assembly">
+    <Found>
+        <RouteView DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate Selector="h1" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <p>Lo siento, no hay nada en esta dirección.</p>
+        </LayoutView>
+    </NotFound>
+</Router>

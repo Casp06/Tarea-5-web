@@ -1,0 +1,23 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page d-flex">
+    <div class="sidebar bg-dark text-white">
+        <NavMenu />
+    </div>
+
+    <main class="flex-grow-1">
+        <div class="top-row px-4 py-2 bg-secondary text-white">
+            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank" class="text-white">PS5</a>
+        </div>
+
+        <article class="content px-4 py-3">
+            @Body
+        </article>
+    </main>
+</div>
+
+<div id="blazor-error-ui" class="bg-danger text-white p-3">
+    An unhandled error has occurred.
+    <a href="" class="reload text-white">Reload</a>
+    <a class="dismiss text-white">🗙</a>
+</div>
